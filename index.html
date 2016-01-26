@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>TagSpaces API Index</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.united.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">TagSpaces API</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="IOAPI.html">IOAPI</a></li><li><a href="IOAPI.ChromeExtension.html">IOAPI.ChromeExtension</a></li><li><a href="IOAPI.Cordova.html">IOAPI.Cordova</a></li><li><a href="IOAPI.FirefoxAddon.html">IOAPI.FirefoxAddon</a></li><li><a href="IOAPI.NWJS.html">IOAPI.NWJS</a></li><li><a href="IOAPI.WebDAV.html">IOAPI.WebDAV</a></li><li><a href="TSCORE.html">TSCORE</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+		<div class="col-sm-3 col-md-3">
+            <form class="navbar-form" role="search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+    <section class="readme-section">
+        <article><p><img src="https://raw.github.com/tagspaces/tagspaces/master/data/assets/icon96.png" alt="tagspaces logo"></p>
+<p><img src="https://travis-ci.org/tagspaces/tagspaces.svg?branch=master" alt="tagspaces@travis">  <a href="https://gitter.im/tagspaces/tagspaces?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Join the chat at https://gitter.im/tagspaces/tagspaces"></a></p>
+<h2>Introduction</h2><p><code>TagSpaces</code> is a open source application for managing of your local files. You can find more information about it on its website <a href="http://tagspaces.org/">tagspaces.org</a>. For a quick TagSpaces introduction please see this <a href="https://www.youtube.com/embed/CJ2hYU6U-C8">video</a> on youtube.</p>
+<ul>
+<li><a href="http://tagspaces.org/blog/">TagSpaces blog</a> for any news about tagspaces</li>
+<li><a href="https://github.com/tagspaces/tagspaces/issues">the issues tracker</a> for developer support requests</li>
+<li><a href="https://github.com/tagspaces/tagspaces/wiki">the TagSpaces wiki</a> for end-users and implementors (currently not really used)</li>
+</ul>
+<p>To get updates you can:</p>
+<ul>
+<li>Subscribe to GitHub updates by clicking the &quot;watch&quot; button up the top right of this page.</li>
+<li>Subscribe to RSS feed updates for the <a href="https://github.com/tagspaces/tagspaces/commits/master.atom">master branch</a></li>
+</ul>
+<h2>Repository Directory Structure</h2><pre class="prettyprint source"><code>./data...............see the next lines
+./data/assets........contains all the css and images used in the application
+./data/ext...........contains the code of tagspaces extensions
+./data/js............contains the javascripts which run the application 
+./data/libs..........contains external javascript libraries together with the license they are distributed 
+./data/chromium...contains files specific for the current Chrome browser extension
+./data/cordova ......contains files needed for the building of the Android application which is based on Cordova
+./data/mozilla.......contains files needed for the Firefox extension based on addon sdk
+./data/web...........contains files needed for the WebDAV/ownCloud based release of TagSpaces
+./data/node-webkit...contains files needed for the windows, linux and mac os build of the application
+./data/templates.....contains HTML templates needed for the UI
+./data/locales.......contains files need for the localisation of the application UI
+./data/_locales......contains files need for the localisation of the chrome extension UI</code></pre><h2>Downloads</h2><p>You can find the latest release of TagSpace in the <a href="https://github.com/tagspaces/tagspaces/releases/">Releases Section</a></p>
+<p>The full changelog is available here: <a href="CHANGELOG.md">Changelog</a></p>
+<h2>Features</h2><ul>
+<li><strong>File managing &amp; tagging:</strong> TagSpaces provides a convenient interface for browsing, viewing and tagging of your local files</li>
+<li><strong>No-Cloud:</strong> TagSpaces is running completely serverless on your laptop, desktop or tablet and does not request internet connection or any kind of online registration or service provider.</li>
+<li><strong>Note Taking:</strong> You can create and edit notes in plain text, markdown and html file formats</li>
+<li><strong>Cross-platform:</strong> TagSpaces runs perfectly on Windows, Linux, Mac, Android and as extension in Firefox and Chrome.</li>
+</ul>
+<h2>Screenshots</h2><p><img src="http://www.tagspaces.org/content/v1.9/tagspaces-html-viewer2.png" alt="Lead TagSpaces Screenshot"></p>
+<h2>Documentation</h2><p>The native Windows, Linux and Mac OS X versions of <code>TagSpaces</code> are built with <a href="https://github.com/rogerwang/node-webkit">node-webkit</a>. node-webkit is an app runtime based on Chromium and node.js. You can write native apps in HTML and Javascript with node-webkit.</p>
+<h3>How to run TagSpaces from the source code?</h3><p>Install <a href="http://nodejs.org/">node.js, npm</a> and <a href="http://git-scm.org/">git</a> for your platform (e.g. OS X, Windows or Linux).</p>
+<p>Install bower package manager</p>
+<pre class="prettyprint source"><code>$ npm install -g bower</code></pre><p>Get the TagSpaces source code by cloning its repository:</p>
+<pre class="prettyprint source"><code>$ git clone https://github.com/tagspaces/tagspaces.git</code></pre><p>Go to the data folder and install the TagSpaces extensions with bower:</p>
+<pre class="prettyprint source"><code>$ cd tagspaces && cd data
+$ bower install</code></pre><h4>Run the native Windows, Linux or Mac OS X application</h4><ul>
+<li>Download <a href="https://github.com/nwjs/nw.js">nw.js</a> prebuilt binaries for your system environment.<ul>
+<li>For Windows: copy <code>nw.exe, nw.pak, icudt.dll, ffmpegsumo.dll</code> to <code>tagspaces/data/node-webkit</code> directory.</li>
+<li>For Linux: copy <code>nw, nw.pak, icudtl.dat, libffmpegsumo.so</code> to <code>tagspaces/data/node-webkit</code> directory. If you experience issue related to libudev.so.0 read the following <a href="https://github.com/rogerwang/node-webkit/wiki/The-solution-of-lacking-libudev.so.0">article</a>.</li>
+<li>For Mac OS X: copy <code>node-webkit.app</code> to <code>tagspaces/data/node-webkit</code> directory.</li>
+</ul>
+</li>
+<li>Run the <code>nw</code> executable file.</li>
+</ul>
+<h4>Run the Chrome/Chromium extension</h4><ul>
+<li>Go to the chrome <code>Settings</code> and then to <code>Extension</code></li>
+<li>Enable the <code>Developer mode</code> checkbox in the upper right part of the screen</li>
+<li>Click on the <code>Load unpacked extension...</code> button</li>
+<li>Then select the <code>tagspaces/data</code> directory and click <code>Open</code></li>
+<li>Activate the <code>Allow access to file URLs</code> check box in the TagSpaces entry, in order to enable the access to your local file system</li>
+<li>Start the extension by clicking on the TagSpaces icon in the upper right part of Chrome/Chromium</li>
+</ul>
+<h4>Run the Firefox extension</h4><ul>
+<li>Download and install the Mozilla Addon SDK following this <a href="https://developer.mozilla.org/en-US/Add-ons/SDK/Tutorials/Installation">article</a></li>
+<li>Start the SDK by executing <code>source bin/activate</code> in the Addon SDK folder</li>
+<li><p>Go to the your local tagspaces folder and run the following command, where the -p argument specifies some local firefox profile:</p>
+<p>  <code>$cfx run -p /tmp/mozprofile</code></p>
+</li>
+<li><p>Start the addon by clicking the TagSpaces icon in the upper right area of Firefox</p>
+</li>
+</ul>
+<h4>How to setup the WebDAV edition?</h4><p>You can find information on this topic on the <a href="http://www.tagspaces.org/webdav-edition/">TagSpaces blog</a>.</p>
+<h2>License</h2><p>TagSpaces's source code is licensed under the AGPL (GNU Affero General Public License) Version 3, for the license text see <a href="LICENSE">LICENSE</a> file.</p>
+<h2>Contribute</h2><p>TagSpaces is an open source software and as such, the code is publicly available on GitHub, and forking is particularly recommended! Still, contribution must be done following some guidelines.<br>Contributor License Agreement</p>
+<p>The CLA is an agreement commonly used in major open source project, which aims at protecting all parties implied by a contribution : the contributor, the main code author, and above all, the community. The CLA model we have chosen basically tells the following : the contribution’s copyright is shared between the contributor and the main author. This means each party can do whatever she want in term of relicensing with this contributed piece of code. This is important, because, if in the future, the author wants to change the license in something more in favor of the community, a singular contributor cannot block the process.</p>
+<p>The Contributor License Agreement can be signed online on the following <a href="http://tagspaces.org/contribute">CLA form</a>.</p>
+<h2>Translations</h2><p>You can help the translation of this application in your favorite languages by joining the translations teams on <a href="https://www.transifex.com/projects/p/tagspaces/">Transifex</a>.</p>
+<h2>Support and Bugs</h2><p>If you are having trouble using TagSpaces or have found a bug or you have some ideas how TagSpaces could be improved: <a href="https://github.com/tagspaces/tagspaces/issues">open a ticket</a> on GitHub.</p>
+<h2>Feeds</h2><ul>
+<li>Subscribe to RSS feed updates for the <a href="http://tagspaces.org/blog/feed.xml">tagspaces blog</a></li>
+<li>Subscribe to RSS feed updates for the <a href="https://github.com/tagspaces/tagspaces/commits/master.atom">master branch</a></li>
+</ul>
+<hr>
+<p>This files is created and edited in <code>TagSpaces</code>, using the <code>viewerMD</code> and <code>editorText</code> extensions.</p></article>
+    </section>
+
+
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+<div class="modal fade" id="searchResults">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Search results</h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<footer>
+
+
+	<span class="copyright">
+	Copyright © 2012-2015 The contributors to the TagSpaces project.
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+	
+		on 2016-01-26T15:06:15+01:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+<script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			var id = $( heading ).attr( "id" );
+			return id && id.replace(/\~/g, '-inner-').replace(/\./g, '-static-') || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		SearcherDisplay.init();
+	});
+</script>
+
+</body>
+</html>

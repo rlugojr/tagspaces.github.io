@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>TagSpaces API Source: chromium/chrome.api.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.united.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">TagSpaces API</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="IOAPI.html">IOAPI</a></li><li><a href="IOAPI.ChromeExtension.html">IOAPI.ChromeExtension</a></li><li><a href="IOAPI.Cordova.html">IOAPI.Cordova</a></li><li><a href="IOAPI.FirefoxAddon.html">IOAPI.FirefoxAddon</a></li><li><a href="IOAPI.NWJS.html">IOAPI.NWJS</a></li><li><a href="IOAPI.WebDAV.html">IOAPI.WebDAV</a></li><li><a href="TSCORE.html">TSCORE</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+		<div class="col-sm-3 col-md-3">
+            <form class="navbar-form" role="search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: chromium/chrome.api.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/* Copyright (c) 2012-2015 The TagSpaces Authors. All rights reserved.
+ * Use of this source code is governed by a AGPL3 license that
+ * can be found in the LICENSE file. */
+/* global define, isWin */
+
+/**
+ * A implementation of the IOAPI for the Chrome/Chromium extensions platform
+ * @class ChromeExtension
+ * @memberof IOAPI
+ */
+define(function(require, exports, module) {
+  "use strict";
+
+  console.log("Loading Lite chrome.api.js..");
+
+  // chrome.browserAction.setBadgeBackgroundColor({ color: '#00ff00' });
+  // chrome.browserAction.setBadgeText({text: '9999'});
+
+  // changing the name of the app
+  $("#logo").text("TagSpaces Lite");
+
+  var TSCORE = require("tscore");
+  var TSPOSTIO = require("tspostioapi");
+  var saveAs = require("libs/filesaver.js/FileSaver.min");
+
+  var dataBegin = "&lt;script>addRow(";
+  var dataEnd = ");&lt;/script>";
+  var dataFile = '",0,"';
+  var dataDir = '",1,"';
+
+
+  function getURLParameter(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split("&amp;");
+    for (var i = 0; i &lt; vars.length; i++) {
+      var pair = vars[i].split("=");
+      if (pair[0] == variable) {
+        return pair[1];
+      }
+    }
+    return (false);
+  }
+
+  function checkAccessFileURLAllowed() {
+    chrome.extension.isAllowedFileSchemeAccess(function(isAllowedAccess) {
+      if (!isAllowedAccess) {
+        TSCORE.showAlertDialog($.i18n.t("ns.dialogs:accessFileURLNotAllowedAlert"));
+      }
+    });
+  }
+
+  function handleStartParameters() {
+    var openFile = getURLParameter("openFile");
+    if (openFile !== undefined &amp;&amp; (openFile.length > 0)) { //  &amp;&amp; openFile.indexOf("file://") === 0
+      console.log("Opening file in browser: " + openFile);
+      openFile = openFile.split("file://")[1];
+      //var dirPath = TSCORE.TagUtils.extractContainingDirectoryPath(filePath);
+      //TSCORE.IO.listDirectory(dirPath);
+      TSCORE.FileOpener.openFileOnStartup(openFile);
+    }
+  }
+
+  function focusWindow() {
+    // Places the TagSpaces window on top of the windows
+    window.focus();
+  }
+
+  function saveSettings(content) {
+    /*chrome.storage.sync.set({'tagSpacesSettings': content}, function() {
+        // Notify that we saved.
+        message('Settings saved');
+    });*/
+  }
+
+  /**
+   * Checks if new version is available
+   * @name checkNewVersion
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   */
+  function checkNewVersion() {
+    console.log("Checking for new version...");
+    var cVer = TSCORE.Config.DefaultSettings.appVersion + "." + TSCORE.Config.DefaultSettings.appBuild;
+    $.ajax({
+        url: 'http://tagspaces.org/releases/version.json?cVer=' + cVer,
+        type: 'GET'
+      })
+      .done(function(data) {
+        TSPOSTIO.checkNewVersion(data);
+      })
+      .fail(function(data) {
+        console.log("AJAX failed " + data);
+      });
+  }
+
+  /**
+   * Creates recursively a tree structure for a given directory path
+   * @name createDirectoryTree
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} dirPath - the full path of the directory for which the tree will be generated
+   */
+  function createDirectoryTree(dirPath) {
+    TSCORE.showAlertDialog("Creating directory tree not supported.");
+    //var directoyTree = generateDirectoryTree(dirPath);
+    //console.log(JSON.stringify(directoyTree));
+    //TSPOSTIO.createDirectoryTree(directoyTree);
+  }
+
+  /**
+   * Creates a list with containing the files and the sub directories of a given directory
+   * @name listDirectoryPromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} dirPath - the full path of the directory for which the tree will be generated
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function listDirectoryPromise(dirPath) {
+    //console.log("Listing directory: " + dirPath);
+    return new Promise(function(resolve, reject) {
+      var anotatedDirList = [];
+      $.ajax({
+          url: "file://" + dirPath,
+          type: 'GET'
+        })
+        .done(function(data) {
+          var folders = data.substring(data.indexOf(dataBegin) + dataBegin.length, data.lastIndexOf(dataEnd));
+          folders = folders.split(dataBegin).join("");
+          folders = folders.split(dataEnd);
+
+          var name,
+            path,
+            isFile,
+            fileSize,
+            lastDateModified,
+            fileProp;
+
+          anotatedDirList = [];
+
+          // sciping the first entry pointing to the parent directory
+          for (var i = 1; i &lt; folders.length; i++) {
+            //console.log("Dir " + folders[i]);
+            name = folders[i].substring(2, folders[i].indexOf('","'));
+            path = dirPath + TSCORE.dirSeparator + name;
+            isFile = (folders[i].indexOf(dataFile) > 1);
+            fileSize = 0;
+            lastDateModified = 0;
+            if (isFile) {
+              fileProp = folders[i].substring(folders[i].indexOf(dataFile) + dataFile.length + 1, folders[i].length - 1);
+              fileProp = fileProp.split('","');
+              fileSize = fileProp[0];
+              lastDateModified = fileProp[1];
+            }
+            anotatedDirList.push({
+              "name": name,
+              "isFile": isFile,
+              "size": fileSize,
+              "lmdt": lastDateModified,
+              "path": path
+            });
+          }
+          resolve(anotatedDirList);
+        }).fail(function(error) {
+          console.warn("Error listing files" + JSON.stringify(error));
+          reject(error);
+        });
+    });
+  }
+
+  /**
+   * Finds out the properties of a file or directory such last modification date or file size
+   * @name getPropertiesPromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} filePath - full path to the file or the directory, which will be analysed
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function getPropertiesPromise(filePath) {
+    return new Promise(function(resolve, reject) {
+      // TODO use listDirectory to get size and lmdt
+      var fileProperties = {};
+      fileProperties.path = filePath;
+      fileProperties.size = 0;
+      fileProperties.lmdt = 0;
+      resolve(fileProperties);
+    });
+  }
+
+  /**
+   * Load the content of a text file
+   * @name loadTextFilePromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} filePath - the full path of the file which will be loaded
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function loadTextFilePromise(filePath) {
+    //
+    return getFileContentPromise(filePath, "text");
+  }
+
+  /**
+   * Gets the content of file, useful for binary files
+   * @name getFileContentPromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} fullPath - the full path of the file which will be loaded
+   * @param {string} type - the type of the XHR response, defaul is *arraybuffer*
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function getFileContentPromise(fullPath, type) {
+    console.log("getFileContentPromise: " + fullPath);
+    return new Promise(function(resolve, reject) {
+      var fileURL = fullPath;
+      if (fileURL.indexOf("file://") === -1) {
+        fileURL = "file://" + fileURL;
+      }
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", fileURL, true);
+      xhr.responseType = type || "arraybuffer";
+      xhr.onerror = reject;
+
+      xhr.onload = function() {
+        var response = xhr.response || xhr.responseText;
+        if (response) {
+          resolve(response);
+        } else {
+          reject("getFileContentPromise error");
+        }
+      };
+      xhr.send();
+    });
+  }
+
+  /**
+   * Persists a given content(binary supported) to a specified filepath
+   * @name saveFilePromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} filePath - the full path of the file which should be saved
+   * @param {string} content - content that will be saved
+   * @param {boolean} overwrite - if true existing file path will be overwritten
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function saveFilePromise(filePath, content, overwrite) {
+    console.log("Saving binary file: " + filePath);
+    return new Promise(function(resolve, reject) {
+      overwrite = overwrite || true;
+      if (overwrite) {
+        var blob = new Blob([content], {
+          type: "text/plain;charset=utf-8"
+        });
+        saveAs(blob, TSCORE.TagUtils.extractFileName(filePath));
+      }
+      resolve();
+    });
+  }
+
+  /**
+   * Not supported on this platform
+   * @name createDirectoryPromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} dirPath - the full path of the folder which will be created
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function createDirectoryPromise(dirPath) {
+    return new Promise(function(res, rej) {
+      rej("Creating directory is not supported in Chrome, please use the desktop version.");
+    });
+  }
+
+  /**
+   * Not supported on this platform
+   * @name renameDirectoryPromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function renameDirectoryPromise() {
+    return new Promise(function(res, rej) {
+      rej("Renaming directory is not supported in Chrome, please use the desktop version.");
+    });
+  }
+
+  /**
+   * Not supported on this platform
+   * @name renameFilePromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function renameFilePromise() {
+    return new Promise(function(res, rej) {
+      rej("Renaming file is not supported in Chrome, please use the desktop version.");
+    });
+  }
+
+  /**
+   * Not supported on this platform
+   * @name copyFilePromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function copyFilePromise() {
+    return new Promise(function(res, rej) {
+      rej("Copy file is not supported in Chrome, please use the desktop version.");
+    });
+  }
+
+  /**
+   * Not supported on this platform
+   * @name deleteFilePromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function deleteFilePromise() {
+    return new Promise(function(res, rej) {
+      rej("Creating directory is not supported in Chrome, please use the desktop version.");
+    });
+  }
+
+  /**
+   * Not supported on this platform
+   * @name deleteDirectoryPromise
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @returns {Promise.&lt;Success, Error>}
+   */
+  function deleteDirectoryPromise() {
+    return new Promise(function(res, rej) {
+      rej("Deleting directory is not supported in Chrome, please use the desktop version.");
+    });
+  }
+
+  /**
+   * Selects a directory with the help of a directory chooser
+   * @name selectDirectory
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   */
+  function selectDirectory() {
+    console.log("Select directory!");
+    var rootPath = "/";
+    if (isWin) {
+      rootPath = "C:";
+    }
+    TSCORE.showDirectoryBrowserDialog(rootPath);
+  }
+
+  /**
+   * Not supported on this platform
+   * @name selectFile
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   */
+  function selectFile() {
+    // TODO
+    TSCORE.showAlertDialog("Select file not implemented!");
+  }
+
+  /**
+   * Not supported on this platform
+   * @name openDirectory
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} dirPath - the full path of the directory which will be opened
+   */
+  function openDirectory(dirPath) {
+    // TODO
+    TSCORE.showAlertDialog($.i18n.t("ns.dialogs:openContainingDirectoryAlert"));
+  }
+
+  /**
+   * Not supported on this platform
+   * @name openFile
+   * @method
+   * @memberof IOAPI.ChromeExtension
+   * @param {string} filePath - the full path of the file which will be opened
+   */
+  function openFile(filePath) {
+    // TODO
+    TSCORE.showAlertDialog($.i18n.t("ns.dialogs:openFileNativelyAlert"));
+  }
+
+  // Platform specific calls
+  exports.checkAccessFileURLAllowed = checkAccessFileURLAllowed;
+  exports.saveSettings = saveSettings;
+
+  // Platform API
+  exports.handleStartParameters = handleStartParameters;
+  exports.focusWindow = focusWindow;
+  exports.checkNewVersion = checkNewVersion;
+
+  exports.createDirectoryTree = createDirectoryTree;
+
+  exports.listDirectoryPromise = listDirectoryPromise;
+
+  exports.getPropertiesPromise = getPropertiesPromise;
+
+  exports.loadTextFilePromise = loadTextFilePromise;
+  exports.getFileContentPromise = getFileContentPromise;
+
+  exports.saveFilePromise = saveFilePromise;
+  exports.saveTextFilePromise = saveFilePromise;
+  exports.saveBinaryFilePromise = saveFilePromise;
+
+  exports.createDirectoryPromise = createDirectoryPromise;
+
+  exports.copyFilePromise = copyFilePromise;
+  exports.renameFilePromise = renameFilePromise;
+  exports.renameDirectoryPromise = renameDirectoryPromise;
+
+  exports.deleteFilePromise = deleteFilePromise;
+  exports.deleteDirectoryPromise = deleteDirectoryPromise;
+
+  exports.selectFile = selectFile;
+  exports.selectDirectory = selectDirectory;
+
+  exports.openDirectory = openDirectory;
+  exports.openFile = openFile;
+});
+</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+<div class="modal fade" id="searchResults">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Search results</h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<footer>
+
+
+	<span class="copyright">
+	Copyright © 2012-2015 The contributors to the TagSpaces project.
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+	
+		on 2016-01-26T15:06:15+01:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+<script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			var id = $( heading ).attr( "id" );
+			return id && id.replace(/\~/g, '-inner-').replace(/\./g, '-static-') || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		SearcherDisplay.init();
+	});
+</script>
+
+</body>
+</html>

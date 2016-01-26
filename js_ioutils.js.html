@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>TagSpaces API Source: js/ioutils.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.united.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">TagSpaces API</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="IOAPI.html">IOAPI</a></li><li><a href="IOAPI.ChromeExtension.html">IOAPI.ChromeExtension</a></li><li><a href="IOAPI.Cordova.html">IOAPI.Cordova</a></li><li><a href="IOAPI.FirefoxAddon.html">IOAPI.FirefoxAddon</a></li><li><a href="IOAPI.NWJS.html">IOAPI.NWJS</a></li><li><a href="IOAPI.WebDAV.html">IOAPI.WebDAV</a></li><li><a href="TSCORE.html">TSCORE</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+		<div class="col-sm-3 col-md-3">
+            <form class="navbar-form" role="search">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                    <div class="input-group-btn">
+                        <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: js/ioutils.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">/* Copyright (c) 2012-2015 The Tagspaces Authors. All rights reserved.
+ * Use of this source code is governed by a AGPL3 license that
+ * can be found in the LICENSE file. */
+/* global define  */
+
+/**
+ * Description
+ * @class IOAPI
+ */
+define(function(require, exports, module) {
+  'use strict';
+  console.log('Loading ioutils.js ...');
+
+  var TSCORE = require('tscore');
+  var TSPOSTIO = require('tspostioapi');
+  var MAXSEARCHRESULTS = 1000;
+  var stopDirectoryWalking = false;
+  var searchResultsCounter = 0;
+
+  function walkDirectory(path, options, fileCallback, dirCallback) {
+    return TSCORE.IO.listDirectoryPromise(path, true).then(function(entries) {
+      return Promise.all(entries.map(function(entry) {
+        if (!options) {
+          options = {};
+          options.recursive = false;
+        }
+        if (entry.isFile) {
+          if (fileCallback) {
+            return fileCallback(entry);
+          } else {
+            return entry;
+          }
+        } else {
+          if (dirCallback) {
+            return dirCallback(entry);
+          }
+          if (options.recursive) { //  &amp;&amp; !stopDirectoryWalking &amp;&amp;
+            return walkDirectory(entry.path, options, fileCallback, dirCallback);
+          } else {
+            return entry;
+          }
+        }
+      }));
+    }).catch(function(err) {
+      console.warn("Error walking directory " + err);
+      return null;
+    });
+  }
+
+  function listSubDirectories(dirPath) {
+    console.log("Listing sub directories: " + dirPath);
+    TSCORE.showLoadingAnimation();
+    TSCORE.IO.listDirectoryPromise(dirPath).then(function(entries) {
+      var anotatedDirList = [];
+      var firstEntry = 0;
+      // skiping the first entry pointing to the parent directory
+      if (isChrome) {
+        firstEntry = 1;
+      }
+      for (var i = firstEntry; i &lt; entries.length; i++) {
+        if (!entries[i].isFile) {
+          anotatedDirList.push({
+            "name": entries[i].name,
+            "path": entries[i].path
+          });
+        }
+      }
+      TSPOSTIO.listSubDirectories(anotatedDirList, dirPath);
+    }).catch(function(error) {
+      TSPOSTIO.errorOpeningPath(dirPath);
+      TSCORE.hideLoadingAnimation();
+      console.error("Error listDirectory " + dirPath + " error: " + error);
+    });
+  }
+
+  function createDirectoryIndex(dirPath) {
+    TSCORE.showWaitingDialog($.i18n.t("ns.common:waitDialogDiectoryIndexing"));
+
+    var directoryIndex = [];
+    TSCORE.IOUtils.walkDirectory(dirPath, {recursive: true}, function(fileEntry) {
+      directoryIndex.push(fileEntry);
+    }).then(function(entries) {
+      TSCORE.hideWaitingDialog();
+      TSCORE.PerspectiveManager.updateFileBrowserData(directoryIndex);
+    }).catch(function(err) {
+      console.warn("Error creating index: " + err);
+      TSCORE.hideWaitingDialog();
+    });
+  }
+
+  function deleteFiles(filePathList) {
+    TSCORE.showLoadingAnimation();
+    var fileDeletionPromises = [];
+    filePathList.forEach(function(filePath) {
+      fileDeletionPromises.push(TSCORE.IO.deleteFilePromise(filePath));
+    });
+
+    Promise.all(fileDeletionPromises).then(function(fList) {
+      fList.forEach(function(filePath) {
+        TSCORE.Meta.updateMetaData(filePath);
+        TSCORE.PerspectiveManager.removeFileUI(filePath);
+        if (filePath === TSCORE.FileOpener.getOpenedFilePath()) {
+          TSCORE.FileOpener.closeFile(true);
+        }
+      });
+      TSCORE.hideLoadingAnimation();
+      TSCORE.showSuccessDialog("Files deleted successfully.");
+    }, function(error) {
+      TSCORE.hideLoadingAnimation();
+      TSCORE.showAlertDialog("Deleting file " + filePath + " failed.");
+      console.error("Deleting file " + filePath + " failed " + error);
+    });
+  }
+
+  exports.stopDirectoryWalking = stopDirectoryWalking;
+  exports.MAXSEARCHRESULTS = MAXSEARCHRESULTS;
+
+  exports.walkDirectory = walkDirectory;
+  exports.listSubDirectories = listSubDirectories;
+  exports.createDirectoryIndex = createDirectoryIndex;
+  exports.deleteFiles = deleteFiles;
+  //TODO exports.createTree = createTree;
+  //TODO exports.copyFiles = copyFiles;
+  //TODO exports.moveFiles = moveFiles;
+});
+</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+<div class="modal fade" id="searchResults">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Search results</h4>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div>
+
+<footer>
+
+
+	<span class="copyright">
+	Copyright © 2012-2015 The contributors to the TagSpaces project.
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
+	
+		on 2016-01-26T15:06:15+01:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+<script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			var id = $( heading ).attr( "id" );
+			return id && id.replace(/\~/g, '-inner-').replace(/\./g, '-static-') || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		SearcherDisplay.init();
+	});
+</script>
+
+</body>
+</html>
